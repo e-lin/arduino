@@ -31,7 +31,7 @@ String clientName = String("d:quickstart:arduino:") + macstr;
 String topicName = String("iot-2/evt/status/fmt/json");
 
 int measurePin = 0;  //connect dust sensor to Arduino A0 pin
-int ledPower = 12;   //connect 3rd led driver pins of dust sensor to Arduino D12
+int ledPower = 9;   //connect 3rd led driver pins of dust sensor to Arduino D9
 
 int samplingTime = 280;
 int deltaTime = 40;
