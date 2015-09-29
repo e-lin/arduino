@@ -17,6 +17,9 @@
 #include <SPI.h>
 #include <Ethernet2.h>
 #include <PubSubClient.h>
+#include "Authentication_OneFile.h"
+#include <sha1.h>
+#include <Base64.h>
 
 //MAC address of the Ethernet shield
 byte mac[] = { 0x90, 0xA2, 0xD2, 0x0F, 0xF7, 0x7F };
@@ -26,7 +29,16 @@ char macstr[] = "90a2d20ff77f";
 byte localserver[] = { 192, 168, 1, 148 };
 
 //for IBM IoT Foundation
-char servername[]="messaging.quickstart.internetofthings.ibmcloud.com";
+//char servername[]="messaging.quickstart.internetofthings.ibmcloud.com";
+//char servername[]="nebula-001a-mqtt.magellanic-clouds.net";
+//#define CONSUMER_KEY "nac8c0x8w7om54pz"
+//#define CONSUMER_SECRET "df2ku6pghf5dr4qs346hrnrplbx6w1au"
+//#define CLIENT_VERSION "DefaultStage1"
+char servername[]="nebula-staginga-mqtt.staging-magellanic-clouds.net";
+#define CONSUMER_KEY "r8a7gooirs1mwx62"
+#define CONSUMER_SECRET "j54cd6iotnbfji2ua0m6rs7qhmjfuqqr"
+#define CLIENT_VERSION "DefaultStage1"
+char* password;
 String clientName = String("d:quickstart:arduino:") + macstr;
 String topicName = String("iot-2/evt/status/fmt/json");
 
@@ -50,7 +62,7 @@ PubSubClient client(servername, 1883, 0, ethClient);
 
 void setup(){
 
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(ledPower,OUTPUT);
   
   if( 0 == Ethernet.begin(mac) ){
@@ -64,10 +76,16 @@ void setup(){
     Serial.print(".");
   }
   Serial.println();
+  
+  Authentication auth( CONSUMER_KEY, CONSUMER_SECRET, CLIENT_VERSION );
+  password = auth.getPassword();
+  Serial.println(strlen(password));
+  Serial.println(password);
 }
   
 void loop(){
   char clientStr[34];
+  clientStr[33] = '\0';
   clientName.toCharArray(clientStr,34);
   char topicStr[26];
   topicName.toCharArray(topicStr,26);
@@ -76,9 +94,14 @@ void loop(){
   getData();
   
   if (!client.connected()) {
-    Serial.print("Trying to connect to: ");
-    Serial.println(clientStr);
-    client.connect(clientStr);
+    Serial.println(F("Attempting MQTT conncection..."));
+    //client.connect(clientStr);
+    if(client.connect(clientStr, CONSUMER_KEY, password )){
+      Serial.println(F("Connected"));
+    }else{
+      Serial.print(F("failed, rc="));
+      Serial.print(client.state());
+    }
   }
   if (client.connected() ) {
     String json = buildJson();
