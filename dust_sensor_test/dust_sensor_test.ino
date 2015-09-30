@@ -120,13 +120,13 @@ void publishData() {
   }
 }
 
-void reconnect(){
+void connect(){
   while(!client.connected()){
     Serial.println(F("Attempting MQTT conncection..."));
     
     if(client.connect(clientName, CONSUMER_KEY, password )){
         //publishData();
-        client.publish("outTopic","hello world");
+        //client.publish("outTopic","hello world");
     }else{
       Serial.print(F("failed, rc="));
       Serial.print(client.state());
@@ -160,31 +160,19 @@ void setup(){
   Serial.println(password);
 #endif
 
-  while(!client.connected()){
-    Serial.println(F("Attempting MQTT conncection..."));
-    
-    if(client.connect(clientName, CONSUMER_KEY, password )){
-        //publishData();
-        client.publish("outTopic","hello world");
-    }else{
-      Serial.print(F("failed, rc="));
-      Serial.print(client.state());
-      Serial.println(F(" try again in 5 seconds"));
-      delay(5000);
-    }
-  }
+  connect();
 }
 
 void loop(){
   
   if(!client.connected()){
     Serial.println(F("Reconnecting..."));
-    reconnect();
+    connect();
   }else{
     Serial.println(F("Publish data..."));
     publishData();
   }
   
+  client.loop();
   delay(5000);
-  //client.loop();
 }
