@@ -24,6 +24,7 @@ char* password;
 #endif
 #if MQTT_TEST
 //#define serverName "nebula-001a-mqtt.magellanic-clouds.net" //104.155.231.238
+//IPAddress serverName(104,155,231,238);
 //#define serverName "nebula-staginga-mqtt.staging-magellanic-clouds.net" //104.155.217.86
 //#define serverName "test.mosquitto.org" //85.119.83.194
 IPAddress serverName(192,168,1,153);
@@ -31,13 +32,13 @@ IPAddress serverName(192,168,1,153);
 #define topicName "hello/topic"
 #endif
 
-
 #if ETHERNET_TEST
 byte mac[] = { 0x90, 0xA2, 0xD2, 0x0F, 0xF7, 0x7F };
 EthernetClient ethClient;
 #endif
 #if MQTT_TEST
 PubSubClient client( ethClient );
+#endif
 
 //dust sensor related
 int measurePin = 0;  //connect dust sensor to Arduino A0 pin
@@ -99,19 +100,20 @@ char* buildJson(){
   return data;
 }
 
+#if MQTT_TEST
 void publishData() {
   
   //get dust sensor data
-//  getData();
+  getData();
 
-//  char* json = buildJson();
-//  boolean pubresult = client.publish(topicName, json);
-  boolean pubresult = client.publish(topicName,"Hi Peggy");
+  char* json = buildJson();
+  boolean pubresult = client.publish(topicName, json);
+//  boolean pubresult = client.publish(topicName,"Hi Peggy");
     
-//  Serial.print(F("attempt to send "));
-//  Serial.println(json);
-//  Serial.print(F("to "));
-//  Serial.println(topicName);
+  Serial.print(F("attempt to send "));
+  Serial.println(json);
+  Serial.print(F("to "));
+  Serial.println(topicName);
     
   if (pubresult){
     Serial.println(F("successfully sent"));
@@ -123,11 +125,12 @@ void publishData() {
 void connect(){
   while(!client.connected()){
     Serial.println(F("Attempting MQTT conncection..."));
-    
-    if(client.connect(clientName, CONSUMER_KEY, password )){
-        //publishData();
-        //client.publish("outTopic","hello world");
-    }else{
+//    Serial.print(F("username: "));
+//    Serial.println(CONSUMER_KEY);
+
+//      if(!client.connect(clientName)){
+//    if(!client.connect(clientName, CONSUMER_KEY, password )){
+  if(!client.connect("7ff70fd2a290", "magellanop.Project1", "123" )){
       Serial.print(F("failed, rc="));
       Serial.print(client.state());
       Serial.println(F(" try again in 5 seconds"));
@@ -160,11 +163,12 @@ void setup(){
   Serial.println(password);
 #endif
 
-  connect();
+  connect(); //must connect in setup
 }
 
 void loop(){
   
+#if MQTT_TEST  
   if(!client.connected()){
     Serial.println(F("Reconnecting..."));
     connect();
@@ -175,4 +179,5 @@ void loop(){
   
   client.loop();
   delay(5000);
+#endif
 }
