@@ -22,17 +22,21 @@
 
 
 #if AUTH
-#define CONSUMER_KEY "magellanop.Project1"
-#define CONSUMER_SECRET "mysecret"
-#define CLIENT_VERSION "0.0.1"
+//#define CONSUMER_KEY "magellanop.Project1"
+//#define CONSUMER_SECRET "mysecret"
+//#define CLIENT_VERSION "0.0.1"
+#define CONSUMER_KEY "nac8c0x8w7om54pz"
+#define CONSUMER_SECRET "df2ku6pghf5dr4qs346hrnrplbx6w1au"
+#define CLIENT_VERSION "DefaultStage1"
 char* password;
 #endif
 #if MQTT_TEST
 //#define serverName "nebula-001a-mqtt.magellanic-clouds.net" //104.155.231.238
-//IPAddress serverName(104,155,231,238);
+IPAddress serverName(104,155,231,238); //magellan
 //#define serverName "nebula-staginga-mqtt.staging-magellanic-clouds.net" //104.155.217.86
 //#define serverName "test.mosquitto.org" //85.119.83.194
-IPAddress serverName(192,168,1,153);
+//IPAddress serverName(192,168,1,153);
+//IPAddress serverName(192,168,1,15);
 #define clientName "7ff70fd2a290"
 #define topicName "hello/topic"
 #endif
@@ -64,7 +68,8 @@ SFE_CC3000_Client mqttClient = SFE_CC3000_Client(wifi);
 #endif
 
 #if MQTT_TEST
-PubSubClient client( mqttClient );
+Client *cnntClient = &mqttClient;
+PubSubClient client( *cnntClient );
 #endif
 
 //dust sensor related
@@ -152,12 +157,16 @@ void publishData() {
 void connect(){
   while(!client.connected()){
     Serial.println(F("Attempting MQTT conncection..."));
-//    Serial.print(F("username: "));
-//    Serial.println(CONSUMER_KEY);
-
+    Serial.print(F("clientName: "));
+    Serial.println(clientName);
+    Serial.print(F("username: "));
+    Serial.println(CONSUMER_KEY);
+    Serial.print(F("password: "));
+    Serial.println(password);    
+    
 //      if(!client.connect(clientName)){
-//    if(!client.connect(clientName, CONSUMER_KEY, password )){
-  if(!client.connect("7ff70fd2a290", "magellanop.Project1", "123" )){
+    if(!client.connect(clientName, CONSUMER_KEY, password )){
+//  if(!client.connect("7ff70fd2a290", "magellanop.Project1", "123" )){
       Serial.print(F("failed, rc="));
       Serial.print(client.state());
       Serial.println(F(" try again in 5 seconds"));
@@ -215,9 +224,14 @@ void setup(){
     }
     Serial.println();
   }
+  
+//  if ( !cnntClient->connect(serverName, 1883) ) {
+//    Serial.println("Error: Could not make a TCP connection");
+//  }
 #endif
 
 #if AUTH
+  Serial.println(F("HERE!"));
   Authentication auth( CONSUMER_KEY, CONSUMER_SECRET, CLIENT_VERSION );
   password = auth.getPassword();
   Serial.println(strlen(password));
